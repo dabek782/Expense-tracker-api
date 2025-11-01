@@ -22,7 +22,7 @@ A small Vite + React frontend with an Express + Mongoose backend for tracking ex
 1. Clone the repo and install dependencies:
 
 ```powershell
-cd "c:\Users\kubad\Desktop\programowanie\webdev\node express\expenses tracker\Expenses-tracker"
+git clone https://github.com/dabek782/Expense-tracker-api
 npm install
 ```
 
