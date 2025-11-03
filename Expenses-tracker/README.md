@@ -36,7 +36,7 @@ npm run dev
 
 Vite will start the frontend dev server (hot reload).
 
-4. Start the backend in a second terminal. You can use `node` or `nodemon` (nodemon is installed as a dependency):
+4. Start the backend in a second terminal:
 
 ```powershell
 # Run backend once
@@ -46,25 +46,27 @@ node src/back/index.js
 npx nodemon src/back/index.js
 ```
 
-Adjust the path if your backend entrypoint differs (commonly `src/back/index.js`).
+**Note:** Make sure you have created `src/back/.env` with your MongoDB connection string before starting the backend.
 
 ## Environment variables
 
-Create a `.env` file at the repository root and set at least the following values (names are conventional — check `src/back/configs/db_config.js` if you want exact names used by the code):
+Create a `.env` file in the `src/back/` directory (NOT the project root) and set the following values:
 
-- `MONGO_URI` — MongoDB connection string (e.g. `mongodb://localhost:27017/expenses` or your Atlas URI)
+- `MONGO_DB_URI` or `MONGO_URI` — MongoDB connection string (e.g. `mongodb://localhost:27017/expenses` or your Atlas URI)
 - `PORT` — port for the backend server (e.g. `5000`)
-- `JWT_SECRET` — secret for signing JSON Web Tokens (if auth is used)
+- `VITE_JWT_TOKEN` — secret for signing JSON Web Tokens (used for authentication)
 - `NODE_ENV` — `development` or `production`
 
-Example `.env`:
+Example `src/back/.env`:
 
 ```
-MONGO_URI=mongodb://localhost:27017/expenses
+MONGO_DB_URI=mongodb://localhost:27017/expenses
 PORT=5000
-JWT_SECRET=replace_with_a_strong_secret
+VITE_JWT_TOKEN=your_secret_jwt_token_here
 NODE_ENV=development
 ```
+
+**Important:** Do NOT use `VITE_` prefix for backend-only variables. The `VITE_` prefix is for frontend environment variables. Update your code to use `MONGO_DB_URI` and `JWT_SECRET` instead.
 
 ## Scripts (from `package.json`)
 
@@ -84,30 +86,36 @@ Note: There is no dedicated `start` script for the backend in `package.json` by 
 
 ## Folder overview
 
+### Frontend
 - `src/main.jsx`, `src/App.jsx` — frontend entry and top-level app
 - `src/components/` — React components
+- `src/lib/` — utility functions
+
+### Backend
 - `src/back/index.js` — backend entry (Express app)
+- `src/back/.env` — environment variables (create this file)
 - `src/back/configs/db_config.js` — database configuration / connection logic
-- `src/back/models/` — Mongoose models
+- `src/back/models/` — Mongoose models (User, Expense, etc.)
+- `src/back/controllers/` — request handlers for routes
 - `src/back/middleware/` — Express middleware (auth, error handling, etc.)
+- `src/back/routes/` — API route definitions
 
-## Tips & troubleshooting
+## API Endpoints
 
-- If the frontend tries to access the backend and gets CORS or connection errors, check the backend `PORT` and confirm the frontend is pointing to the correct API base URL.
-- If MongoDB can't connect, verify `MONGO_URI` and that your MongoDB server is running and reachable.
-- Use `npx nodemon` if you want automatic restarts for backend code changes.
-- If linting fails, run `npm run lint` to see the reported issues and fix them or adjust `.eslintrc` rules.
+### Authentication
+- `POST /api/v1/auth/register` — Register a new user
+- `POST /api/v1/auth/login` — Login and get JWT token
 
-## Testing / Next steps
+### Expenses (requires authentication)
+- `POST /api/v1/expenses` — Create new expense
+- `GET /api/v1/expenses` — Get all expenses for logged-in user
+- `GET /api/v1/expenses/:id` — Get single expense by ID
+- `PUT /api/v1/expenses/:id` — Update expense
+- `DELETE /api/v1/expenses/:id` — Delete expense
 
-- Add a small `start` script for the backend to `package.json` for convenience.
-- Add README sections for API endpoints if you want to document the backend routes.
-- Consider Dockerizing the app and database for reproducible local setup.
+**Authentication:** Include JWT token in request header:
+```
+Authorization: Bearer <your_jwt_token>
+```
 
----
-
-If you'd like, I can also:
-- Add `start:backend` and `dev:backend` scripts to `package.json`.
-- Inspect `src/back/index.js` and `src/back/configs/db_config.js` and add a short API doc in the README listing endpoints.
-- Create a `.env.example` file with recommended variable names.
 
