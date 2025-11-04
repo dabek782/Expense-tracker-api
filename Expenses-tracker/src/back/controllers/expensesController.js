@@ -4,7 +4,7 @@
  * All functions require authentication - req.userID is set by authenticate middleware
  */
 
-import mongoose from "mongoose";
+import {asyncHandler , AppError} from "../utils/errors.js";
 import Expense from "../models/expenses.js";
 
 /**
@@ -14,7 +14,7 @@ import Expense from "../models/expenses.js";
  * @access Private (requires JWT token)
  */
 export const createExpense = async (req, res) => {
-    try {
+  
         const {name, cost, type, description, date} = req.body
         
         // Create expense linked to authenticated user
@@ -30,10 +30,8 @@ export const createExpense = async (req, res) => {
         if(expense){
             return res.status(201).json({message: "Expense succefully created", expense})
         }
-    } catch (error) {
-        return res.status(500).json({message: "Internal Error", error: error.message})
+        throw new AppError("Internal error" , 500)
     }
-}
 
 /**
  * Get all expenses for the logged-in user
@@ -42,14 +40,16 @@ export const createExpense = async (req, res) => {
  * @route GET /api/v1/expense/getAll
  * @access Private (requires JWT token)
  */
-export const getExpenses = async (req, res) => {
-    try {
+export const getExpenses =async (req, res) => {
         // Find only expenses belonging to the authenticated user
         const expenses = await Expense.find({userID: req.userID}).sort({date: -1})
-        return res.status(200).json({expenses})
-    } catch (error) {
-        return res.status(500).json({message: "Internal Error", error: error.message})
-    }
+        if(Object.keys(expenses).length == 0 ){
+             throw new AppError("Did not find any expenses" , 401)
+
+        }
+        else{
+            return res.status(200).json({expenses})           
+        }
 }
 
 /**
@@ -60,16 +60,16 @@ export const getExpenses = async (req, res) => {
  * @access Private (requires JWT token)
  */
 export const getExpenseById = async (req, res) => {
-    try {
+
         // Find expense that belongs to user AND matches the ID
         const expense = await Expense.findOne({
             userID: req.userID,
             _id: req.params.id
         })
-        res.status(200).json({expense})
-    } catch (error) {
-        return res.status(500).json({message: "Internal Error"})
-    }    
+        if(expense === null ){
+            throw new AppError("Did not find any expenses with that id"  , 401)
+        }
+        return res.status(200).json({expense})  
 }
 
 /**
@@ -80,7 +80,7 @@ export const getExpenseById = async (req, res) => {
  * @access Private (requires JWT token)
  */
 export const deleteExpense = async(req, res) => {
-    try {
+    
         // Delete only if expense belongs to authenticated user
         const deleteExpense = await Expense.deleteOne({
             userID: req.userID,
@@ -89,12 +89,11 @@ export const deleteExpense = async(req, res) => {
         
         // Check if any document was deleted
         if(deleteExpense.deletedCount === 0){
-            return res.status(404).json({message: "Expense not found"})
+            throw new AppError("Expense not found" , 404)
         }
+        
         return res.status(204).json({message: "Expense deleted"})
-    } catch (error) {
-        return res.status(500).json({message: "Internal Error"}) 
-    }
+    
 }
 
 /**
@@ -105,7 +104,7 @@ export const deleteExpense = async(req, res) => {
  * @access Private (requires JWT token)
  */
 export const updateExpense = async(req, res) => {
-    try {
+    
         const {name, cost, type, description, date} = req.body
         
         // Update only if expense belongs to authenticated user
@@ -116,10 +115,8 @@ export const updateExpense = async(req, res) => {
         )
         
         if(!updateExpense){
-            return res.status(404).json({message: "Expense not found"})
+            throw new AppError("Expense not found" , 404)
         }
         return res.status(200).json({message: "Expense updated"})
-    } catch (error) {
-        return res.status(500).json({message: "Internal Error"}) 
-    }
+    
 }

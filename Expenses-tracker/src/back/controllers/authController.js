@@ -8,6 +8,7 @@ import bcrypt from "bcrypt"
 import "../models/user.js"
 import jwt from "jsonwebtoken"
 import User from "../models/user.js";
+import { AppError , asyncHandler} from "../utils/errors.js";
 
 /**
  * Register a new user
@@ -16,14 +17,14 @@ import User from "../models/user.js";
  * @route POST /api/v1/auth/register
  * @access Public
  */
-export const register = async (req, res) => {
-    try {
+export const register =asyncHandler( async (req, res) => {
+
         const {email, name, password} = req.body
         
         // Check if user already exists
         const existingUser = await User.findOne({email})
         if(existingUser){
-            return res.status(400).json({message: "User already in database"})
+            throw new AppError("User with this email already exits in database" , 401)
         }
         
         // Create new user (password will be hashed by pre-save hook)
@@ -33,11 +34,9 @@ export const register = async (req, res) => {
         const userToken = jwt.sign({id: user._id}, process.env.JWT_TOKEN, {expiresIn: '1d'})
         
         return res.status(201).json({message: "User created succesfully", user})
-    }
-    catch(error){
-        return res.status(500).json({message: "Internal error", error: error.message})
-    }
-}
+})
+    
+
 
 /**
  * Login existing user
@@ -46,28 +45,26 @@ export const register = async (req, res) => {
  * @route POST /api/v1/auth/login
  * @access Public
  */
-export const login = async(req, res) => {
-    try {
+export const login = asyncHandler( async(req, res) => {
+
         const {email, password} = req.body
         
         // Find user by email
         const ValidUser = await User.findOne({email})
         if(!ValidUser){
-            return res.status(401).json({message: "Did not find user with that email"})
+            throw new AppError("This email does not belong to any user" , 401)
         }
         
         // Verify password using bcrypt comparison
         const isMatching = await ValidUser.isValidPassword(password)
         if(!isMatching) {
-            return res.status(401).json({message: "Invalid credentials"})
+            throw new AppError("Password or email  does not match" , 401)
         }
         
         // Generate JWT token for authenticated session
         const token = jwt.sign({id: ValidUser._id}, process.env.JWT_TOKEN, {expiresIn: '1d'})
         
         return res.status(200).json({message: "Login succesful", token})
-    } catch (error) {
-        return res.status(500).json({message: "Internal error", error: error.message})
-    }
-}
+      
+})
 
