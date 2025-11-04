@@ -36,7 +36,7 @@ npm run dev
 
 Vite will start the frontend dev server (hot reload).
 
-4. Start the backend in a second terminal. You can use `node` or `nodemon` (nodemon is installed as a dependency):
+4. Start the backend in a second terminal:
 
 ```powershell
 # Run backend once
@@ -46,25 +46,27 @@ node src/back/index.js
 npx nodemon src/back/index.js
 ```
 
-Adjust the path if your backend entrypoint differs (commonly `src/back/index.js`).
+**Note:** Make sure you have created `src/back/.env` with your MongoDB connection string before starting the backend.
 
 ## Environment variables
 
-Create a `.env` file at the repository root and set at least the following values (names are conventional — check `src/back/configs/db_config.js` if you want exact names used by the code):
+Create a `.env` file in the `src/back/` directory (NOT the project root) and set the following values:
 
-- `MONGO_URI` — MongoDB connection string (e.g. `mongodb://localhost:27017/expenses` or your Atlas URI)
+- `MONGO_DB_URI` or `MONGO_URI` — MongoDB connection string (e.g. `mongodb://localhost:27017/expenses` or your Atlas URI)
 - `PORT` — port for the backend server (e.g. `5000`)
-- `JWT_SECRET` — secret for signing JSON Web Tokens (if auth is used)
+- `VITE_JWT_TOKEN` — secret for signing JSON Web Tokens (used for authentication)
 - `NODE_ENV` — `development` or `production`
 
-Example `.env`:
+Example `src/back/.env`:
 
 ```
-MONGO_URI=mongodb://localhost:27017/expenses
+MONGO_DB_URI=mongodb://localhost:27017/expenses
 PORT=5000
-JWT_SECRET=replace_with_a_strong_secret
+VITE_JWT_TOKEN=your_secret_jwt_token_here
 NODE_ENV=development
 ```
+
+**Important:** Do NOT use `VITE_` prefix for backend-only variables. The `VITE_` prefix is for frontend environment variables. Update your code to use `MONGO_DB_URI` and `JWT_SECRET` instead.
 
 ## Scripts (from `package.json`)
 
@@ -84,30 +86,96 @@ Note: There is no dedicated `start` script for the backend in `package.json` by 
 
 ## Folder overview
 
+### Frontend
 - `src/main.jsx`, `src/App.jsx` — frontend entry and top-level app
-- `src/components/` — React components
+- `src/components/` — React components (Radix UI based)
+- `src/lib/` — utility functions
+- `vite.config.js` — Vite configuration with React plugin and path aliases
+
+### Backend
 - `src/back/index.js` — backend entry (Express app)
+- `src/back/.env` — environment variables (create this file)
 - `src/back/configs/db_config.js` — database configuration / connection logic
-- `src/back/models/` — Mongoose models
-- `src/back/middleware/` — Express middleware (auth, error handling, etc.)
+- `src/back/models/` — Mongoose models (User, Expense)
+- `src/back/controllers/` — request handlers for routes (authController, expensesController)
+- `src/back/middleware/` — Express middleware (JWT authentication)
+- `src/back/validators/` — Joi validation schemas and middleware (authValidator)
+- `src/back/routes/` — API route definitions (routes.js for auth, expensesRoutes.js)
 
-## Tips & troubleshooting
+## API Endpoints
 
-- If the frontend tries to access the backend and gets CORS or connection errors, check the backend `PORT` and confirm the frontend is pointing to the correct API base URL.
-- If MongoDB can't connect, verify `MONGO_URI` and that your MongoDB server is running and reachable.
-- Use `npx nodemon` if you want automatic restarts for backend code changes.
-- If linting fails, run `npm run lint` to see the reported issues and fix them or adjust `.eslintrc` rules.
+### Authentication (No token required)
+- `POST /api/v1/auth/register` — Register a new user
+  - Body: `{ "email": "user@example.com", "name": "John Doe", "password": "password123" }`
+  - Validation: Email must be valid format (max 30 chars), name 3-30 chars, password 6-50 chars
+  - Response: `201 Created` with user ID or `400 Bad Request` with validation errors
 
-## Testing / Next steps
+- `POST /api/v1/auth/login` — Login and get JWT token
+  - Body: `{ "email": "user@example.com", "password": "password123" }`
+  - Validation: Email must be valid format, password required
+  - Response: `200 OK` with JWT token or `401 Unauthorized` / `404 Not Found`
 
-- Add a small `start` script for the backend to `package.json` for convenience.
-- Add README sections for API endpoints if you want to document the backend routes.
-- Consider Dockerizing the app and database for reproducible local setup.
+### Expenses (Requires authentication)
+All expense endpoints require a valid JWT token in the Authorization header.
 
----
+- `POST /api/v1/expense/create` — Create new expense
+  - Body: `{ "name": "Groceries", "cost": 50.00, "type": "Food", "description": "Weekly shopping", "date": "2025-11-04" }`
+  - Response: `201 Created` with expense object
 
-If you'd like, I can also:
-- Add `start:backend` and `dev:backend` scripts to `package.json`.
-- Inspect `src/back/index.js` and `src/back/configs/db_config.js` and add a short API doc in the README listing endpoints.
-- Create a `.env.example` file with recommended variable names.
+- `GET /api/v1/expense/getAll` — Get all expenses for logged-in user
+  - Response: `200 OK` with array of expenses
+
+- `GET /api/v1/expense/getExpensesID/:id` — Get single expense by ID
+  - Response: `200 OK` with expense object or `404 Not Found`
+
+- `PATCH /api/v1/expense/update/:id` — Update expense
+  - Body: Fields to update (e.g., `{ "cost": 75.00, "description": "Updated" }`)
+  - Response: `200 OK` with updated expense
+
+- `DELETE /api/v1/expense/delete/:id` — Delete expense
+  - Response: `204 No Content` or `404 Not Found`
+
+**Authentication:** Include JWT token in request header:
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+## Data Validation
+
+The backend uses **Joi** for request validation. All validation errors return `400 Bad Request` with a JSON object containing detailed error information:
+
+```json
+{
+  "errors": [
+    {
+      "field": "email",
+      "message": "\"email\" must be a valid email"
+    },
+    {
+      "field": "password",
+      "message": "\"password\" length must be at least 6 characters long"
+    }
+  ]
+}
+```
+
+### Validation Rules
+
+**Registration:**
+- Email: Valid email format, max 30 characters
+- Name: 3-30 characters
+- Password: 6-50 characters
+
+**Login:**
+- Email: Valid email format (no length restriction for existing users)
+- Password: Required (no length restriction - validated against stored hash)
+
+**Expenses:**
+- Name: 2-20 characters (required)
+- Cost: Number >= 0 (required)
+- Type: Must be one of: `Food`, `Transport`, `Utilities`, `Entertainment`, `Shopping`, `Health`, `Other`, `Subscriptions`
+- Description: Optional
+- Date: Valid date (optional, defaults to current date)
+
+
 
