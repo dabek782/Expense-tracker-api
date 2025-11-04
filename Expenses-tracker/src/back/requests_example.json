@@ -1,0 +1,73 @@
+[
+{
+  "email": "abc@example.com",
+  "password": "Password123",
+  "name": "Jane Doe",
+  "_id": "690a2b2407052237cec516e8"
+	
+},
+{
+  "email": "abc@example.com",
+  "password": "Password123",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MGEyYjI0MDcwNTIyMzdjZWM1MTZlOCIsImlhdCI6MTc2MjI3NDMyMiwiZXhwIjoxNzYyMzYwNzIyfQ.YLZ4bJrDVXYdq0KPB2Ka4-bKh084XACKD8tKcQRMpM8"
+},
+{
+  "_id": "690a2c7920682087329c03e3",
+            "userID": "690a2b2407052237cec516e8",
+            "name": "cinema",
+            "cost": 12,
+            "type": "Entertainment",
+            "description": "",
+            "date": "2025-11-04T00:00:00.000Z",
+            "createdAt": "2025-11-04T16:38:58.276Z",
+            "__v": 0
+},
+{
+   "name": "grocery_shopping",
+  "cost": 87.45,
+  "type": "Food",
+  "description": "Weekly groceries at Walmart",
+  "date": "2025-11-01T00:00:00.000Z",
+  "createdAt": "2025-11-01T09:15:22.145Z",
+  "__v": 0
+},
+{
+  "name": "electricity_bill",
+  "cost": 125.30,
+  "type": "Utilities",
+  "description": "Monthly electricity payment",
+  "date": "2025-10-28T00:00:00.000Z",
+  "createdAt": "2025-10-28T14:22:18.876Z",
+  "__v": 0
+},
+{
+  "name": "gas_station",
+  "cost": 55.00,
+  "type": "Transport",
+  "description": "Fuel for car",
+  "date": "2025-11-02T00:00:00.000Z",
+  "createdAt": "2025-11-02T18:45:33.234Z",
+  "__v": 0,
+   "_id": "690a2df0052936112fff0084"
+},
+{
+  "name": "restaurant_dinner",
+  "cost": 64.50,
+  "type": "Food",
+  "description": "Dinner at Italian restaurant",
+  "date": "2025-11-03T00:00:00.000Z",
+  "createdAt": "2025-11-03T20:30:15.567Z",
+  "__v": 0,
+  "_id": "690a2dcc996b63fd30347b8a"
+},
+{
+  "name": "gym_membership",
+  "cost": 45.00,
+  "type": "Health",
+  "description": "Monthly gym subscription",
+  "date": "2025-11-01T00:00:00.000Z",
+  "createdAt": "2025-11-01T08:00:00.000Z",
+  "__v": 0,
+  "_id":"690a2da003bd29faebb722d6"
+}
+]

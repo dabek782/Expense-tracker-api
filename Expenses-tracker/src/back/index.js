@@ -3,7 +3,7 @@ import 'dotenv/config'
 import  connectDB from'./configs/db_config.js'
 import cors from 'cors'
 import auth from './routes/routes.js'
-import expense from './routes/routes.js'
+import expense from './routes/expensesRoutes.js'
 const app = express()
 app.use(express.json())
 app.use(cors())

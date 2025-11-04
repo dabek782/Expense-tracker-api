@@ -1,7 +1,4 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv"
-import { Type } from "lucide-react";
-import { Description } from "@radix-ui/themes/dist/cjs/components/alert-dialog";
 
 const ExpenseSchema = new mongoose.Schema({
     userID :{
@@ -22,7 +19,7 @@ const ExpenseSchema = new mongoose.Schema({
     type : {
         type:String,
         required : true,
-        enum : ["food" , "transport" , "other" , "subscriptions" , "shopping" , "healthcare" , "utilities" , "entertainment"]
+        enum : ["Food" , "Transport" , "Other" , "Subscriptions" , "Shopping" , "Health" , "Utilities" , "Entertainment"]
     },
     description : {
         type:String,
@@ -30,14 +27,14 @@ const ExpenseSchema = new mongoose.Schema({
     },
     date : {
         type: Date , 
-        default : Date.now()
+        default : Date.now
     },
     createdAt:{
         type: Date , 
-        default : Date.now()
+        default : Date.now
     
     }
 })
 
-const Expense =  mongoose.model("Expense " , ExpenseSchema)
+const Expense =  mongoose.model("Expense" , ExpenseSchema)
 export default Expense

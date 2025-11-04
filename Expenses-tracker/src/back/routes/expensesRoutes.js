@@ -4,7 +4,7 @@ import { authenticate } from '../middleware/middleware.js'
 const router = express.Router()
 router.use(authenticate)
 
-router.get('/getExpenses' , getExpenses)
+router.get('/getAll' , getExpenses)
 router.get('/getExpensesID/:id',getExpenseById)
 router.post('/create',createExpense)
 router.delete('/delete/:id' , deleteExpense)

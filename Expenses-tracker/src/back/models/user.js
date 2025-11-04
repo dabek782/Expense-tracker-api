@@ -5,13 +5,15 @@ const UserSchema = new mongoose.Schema({
     name : {
         type: String,
         required: true,
-        unique : true
+        minlength: 3,
+        maxlength: 30
     },
     email :{
         type:String,
         required: true,
         lowercase:true , 
-        unique: true
+        unique: true,
+        maxlength: 50
     },
     password :{
         type:String,
@@ -20,23 +22,19 @@ const UserSchema = new mongoose.Schema({
     },
     createdAt:{
         type:Date,
-        default:Date.now()
+        default:Date.now
         
     }
 })
 
 UserSchema.pre("save" , async function (next) {
-    if(!this.isModified('password')) return next
+    if(!this.isModified('password')) return next()
     this.password = await bcrypt.hash(this.password,12)
-    return next    
+    return next() 
 })
 
-UserSchema.methods.IsValidPassword = async function (password) {
-    try {
-        return bcrypt.compare(password , this.password)
-    } catch (error) {
-        console.error({message : error.message})
-    }
+UserSchema.methods.isValidPassword = async function (password) {
+    return bcrypt.compare(password , this.password)
     
 }
 const User = mongoose.model('User' , UserSchema)

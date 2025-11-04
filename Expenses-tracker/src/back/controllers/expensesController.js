@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Expense from "../models/expenses";
+import Expense from "../models/expenses.js";
 
 export const createExpense = async (req,res)=>{
     try {
@@ -13,32 +13,32 @@ export const createExpense = async (req,res)=>{
         date
     })
     if(expense){
-       return res.status(201).json({message : "Expense succefully created"})
+       return res.status(201).json({message : "Expense succefully created" , expense})
     }
 
         
     } catch (error) {
-      return  res.status(500).json({message:"Internal Error"})
+      return  res.status(500).json({message:"Internal Error" ,error:error.message})
     }
 
 }
 
 export const getExpenses = async (req,res)=>{
     try {
-        const expenses = await Expense.find({userID : req.body.userID}).sort({date:-1})
-        return res.status(201).json({expenses})
+        const expenses = await Expense.find({userID : req.userID}).sort({date:-1})
+        return res.status(200).json({expenses})
     } catch (error) {
-        return  res.status(500).json({message:"Internal Error"})
+        return  res.status(500).json({message:"Internal Error" , error : error.message})
     }
 }
 
 export const getExpenseById = async (req,res) => {
     try {
-        const expense = await Expense.findById({
+        const expense = await Expense.findOne({
             userID : req.userID,
             _id:req.params.id
         })
-        res.status(201).json({expense})
+        res.status(200).json({expense})
     } catch (error) {
         return  res.status(500).json({message:"Internal Error"})
     }    
@@ -49,10 +49,10 @@ export const deleteExpense = async(req,res)=>{
             userID : req.userID,
             _id : req.params.id
         })
-        if(!deleteExpense){
+        if(deleteExpense.deletedCount === 0){
             return res.status(404).json({message:"Expense not found"})
         }
-        return res.status(201).json({message:"Expense deleted"})
+        return res.status(204).json({message:"Expense deleted"})
         
     } catch (error) {
        return  res.status(500).json({message:"Internal Error"}) 
@@ -71,7 +71,7 @@ export  const updateExpense = async(req,res)=>{
         if(!updateExpense){
             return res.status(404).json({message:"Expense not found"})
         }
-          return res.status(201).json({message:"Expense updated"})
+          return res.status(200).json({message:"Expense updated"})
 
     } catch (error) {
          return  res.status(500).json({message:"Internal Error"}) 
