@@ -14,7 +14,7 @@ export const authenticate = asyncHandler(async (req, res, next) => {
     
     // Check if token exists
     if(!token){
-        throw new AppError("token was not provide" , 401)
+        throw new AppError("token was not provided" , 401)
     }
         // Verify token and extract payload
         const control = jwt.verify(token, process.env.JWT_TOKEN)
